@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>AERO VOID // Deep Space Interceptor</title>
+  <title>POLARIS // Dual-Polarity Tactical Interceptor</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Space+Grotesk:wght@500;700;900&family=JetBrains+Mono:wght@500;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@600;700;900&family=JetBrains+Mono:wght@600;700;800&display=swap');
 
     *, *::before, *::after {
       box-sizing: border-box;
@@ -18,16 +18,12 @@
       -webkit-touch-callout: none;
     }
     :root {
-      --bg: #090a0f;
-      --surface: rgba(18, 22, 34, 0.75);
-      --surface-border: rgba(255, 255, 255, 0.08);
-      --amber: #f59e0b;
-      --cyan: #38bdf8;
-      --crimson: #f43f5e;
-      --emerald: #10b981;
-      --violet: #a855f7;
+      --bg: #06070a;
+      --solar: #f59e0b;
+      --solar-glow: rgba(245, 158, 11, 0.4);
+      --void: #38bdf8;
+      --void-glow: rgba(56, 189, 248, 0.4);
       --font-display: 'Space Grotesk', -apple-system, sans-serif;
-      --font-body: 'Plus Jakarta Sans', -apple-system, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
     html, body {
@@ -35,342 +31,233 @@
       height: 100%;
       overflow: hidden;
       background: var(--bg);
-      font-family: var(--font-body);
-      color: #f1f5f9;
+      font-family: var(--font-mono);
+      color: #f8fafc;
       touch-action: none;
     }
     #game-container {
       position: relative;
       width: 100%;
       height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #090a0f;
+      overflow: hidden;
+      background: #06070a;
     }
     canvas {
       display: block;
       width: 100%;
       height: 100%;
-      object-fit: contain;
     }
 
-    /* Cinematic HUD */
+    /* Minimalist HUD */
     .hud {
       position: absolute;
-      top: env(safe-area-inset-top, 16px);
+      top: env(safe-area-inset-top, 14px);
       left: 18px;
       right: 18px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       pointer-events: none;
       z-index: 10;
     }
-    .hud-stat-panel {
+    .hud-left {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
     }
-    .hud-tag {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 2px;
-      color: #64748b;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .hud-tag .sector-pill {
-      background: rgba(56, 189, 248, 0.15);
-      color: var(--cyan);
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      padding: 1px 7px;
-      border-radius: 4px;
-      font-size: 9px;
-      letter-spacing: 1px;
-    }
-    .score-display {
-      font-family: var(--font-mono);
-      font-size: 26px;
+    .score-txt {
+      font-size: 24px;
       font-weight: 800;
+      letter-spacing: -1px;
       color: #ffffff;
-      letter-spacing: -0.5px;
-      line-height: 1.1;
+      line-height: 1;
     }
-    .multiplier-tag {
-      font-family: var(--font-mono);
+    .chain-txt {
       font-size: 11px;
       font-weight: 700;
-      color: var(--amber);
+      color: #64748b;
       letter-spacing: 1px;
     }
 
-    /* Top right controls */
-    .hud-actions {
-      display: flex;
-      gap: 10px;
-      pointer-events: auto;
-    }
-    .icon-btn {
-      width: 38px;
-      height: 38px;
-      border-radius: 10px;
-      background: var(--surface);
-      border: 1px solid var(--surface-border);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      color: #94a3b8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      outline: none;
-      transition: all 0.15s ease;
-    }
-    .icon-btn:active {
-      transform: scale(0.92);
-      color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-    .icon-btn svg {
-      width: 17px;
-      height: 17px;
-      stroke: currentColor;
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    /* Player Shields / Hull Health indicators */
-    .hull-wrap {
-      position: absolute;
-      top: calc(env(safe-area-inset-top, 16px) + 68px);
-      left: 18px;
-      display: flex;
-      gap: 5px;
-      z-index: 10;
-      pointer-events: none;
-    }
-    .hull-bar {
-      width: 22px;
-      height: 4px;
-      border-radius: 2px;
-      background: rgba(255, 255, 255, 0.1);
-      transition: background 0.2s, box-shadow 0.2s;
-    }
-    .hull-bar.active {
-      background: var(--cyan);
-      box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
-    }
-    .hull-bar.danger {
-      background: var(--crimson);
-      box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
-    }
-
-    /* EMP Pulse Trigger button */
-    .emp-container {
-      position: absolute;
-      bottom: calc(env(safe-area-inset-bottom, 18px) + 20px);
-      right: 20px;
-      z-index: 10;
-      pointer-events: auto;
-    }
-    .emp-btn {
-      width: 68px;
-      height: 68px;
-      border-radius: 20px;
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+    .graze-gauge-wrap {
       display: flex;
       flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+    }
+    .graze-lbl {
+      font-size: 9px;
+      letter-spacing: 1.5px;
+      color: #64748b;
+      font-weight: 700;
+    }
+    .graze-bar-bg {
+      width: 80px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .graze-bar-fill {
+      width: 0%;
+      height: 100%;
+      background: #ffffff;
+      box-shadow: 0 0 8px #ffffff;
+      transition: width 0.1s linear;
+    }
+
+    /* Polarity Indicator on Bottom */
+    .polarity-hud {
+      position: absolute;
+      bottom: calc(env(safe-area-inset-bottom, 16px) + 20px);
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .polarity-badge {
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      gap: 3px;
-      cursor: pointer;
-      touch-action: manipulation;
-      transition: all 0.15s ease;
-    }
-    .emp-btn:active {
-      transform: scale(0.92);
-      border-color: var(--cyan);
-      box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
-    }
-    .emp-btn svg {
-      width: 24px;
-      height: 24px;
-      stroke: var(--cyan);
-      fill: none;
-      stroke-width: 2;
-    }
-    .emp-btn span {
-      font-family: var(--font-mono);
-      font-size: 8px;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+      font-size: 11px;
       font-weight: 800;
       letter-spacing: 1.5px;
-      color: #94a3b8;
+      transition: all 0.2s ease;
     }
-    .emp-badge {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: var(--cyan);
-      color: #090a0f;
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 800;
-      border-radius: 6px;
-      padding: 1px 6px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    .polarity-badge.solar {
+      color: var(--solar);
+      border-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.2);
     }
+    .polarity-badge.void {
+      color: var(--void);
+      border-color: rgba(56, 189, 248, 0.4);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.2);
+    }
+    .polarity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .polarity-badge.solar .polarity-dot { background: var(--solar); box-shadow: 0 0 8px var(--solar); }
+    .polarity-badge.void .polarity-dot { background: var(--void); box-shadow: 0 0 8px var(--void); }
 
-    /* Threat warning banner */
-    #threat-warning {
-      position: absolute;
-      top: 130px;
-      left: 0;
-      right: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      pointer-events: none;
-      z-index: 15;
-      opacity: 0;
-      transform: translateY(-8px);
-      transition: opacity 0.3s, transform 0.3s;
-    }
-    #threat-warning.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .threat-pill {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 800;
-      letter-spacing: 2px;
+    /* Minimal Tap-to-Shift cue */
+    .shift-cue {
+      font-size: 10px;
+      font-weight: 700;
+      color: #475569;
+      letter-spacing: 1px;
       text-transform: uppercase;
-      padding: 6px 16px;
-      border-radius: 6px;
-      background: rgba(244, 63, 94, 0.16);
-      border: 1px solid rgba(244, 63, 94, 0.4);
-      color: var(--crimson);
-      backdrop-filter: blur(8px);
+      padding-bottom: 8px;
     }
 
-    /* Modal Screens */
+    /* Start / Overlays - Clean, Zero Bloat */
     .screen-overlay {
       position: absolute;
       inset: 0;
-      background: rgba(9, 10, 15, 0.82);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      background: rgba(6, 7, 10, 0.88);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       padding: 24px;
       text-align: center;
-      z-index: 30;
-      transition: opacity 0.25s ease;
+      z-index: 20;
     }
     .screen-overlay.hidden {
       display: none;
     }
-    .brand-eyebrow {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 3px;
-      color: var(--cyan);
-      text-transform: uppercase;
-      margin-bottom: 6px;
-    }
-    .brand-title {
+    .game-logo {
       font-family: var(--font-display);
-      font-size: 38px;
+      font-size: 44px;
       font-weight: 900;
-      letter-spacing: -1px;
+      letter-spacing: -1.5px;
       color: #ffffff;
-      margin-bottom: 8px;
-      line-height: 1.05;
+      margin-bottom: 4px;
+      line-height: 1;
     }
-    .brand-subtitle {
-      font-size: 13px;
-      color: #94a3b8;
-      max-width: 320px;
-      line-height: 1.5;
-      margin-bottom: 28px;
-    }
-
-    /* Tactile Glass Card */
-    .tactical-card {
-      background: rgba(18, 22, 34, 0.8);
-      border: 1px solid var(--surface-border);
-      border-radius: 18px;
-      padding: 18px 24px;
-      width: 100%;
-      max-width: 320px;
-      margin-bottom: 26px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
-    }
-    .card-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin: 8px 0;
-      font-size: 13px;
-    }
-    .card-row-label {
-      color: #64748b;
-      font-family: var(--font-mono);
+    .game-byline {
       font-size: 11px;
-      letter-spacing: 1px;
+      letter-spacing: 3px;
+      color: #64748b;
+      margin-bottom: 36px;
+      text-transform: uppercase;
     }
-    .card-row-value {
-      font-family: var(--font-mono);
-      font-weight: 700;
-      font-size: 15px;
-      color: #f1f5f9;
+    .core-mechanic-pill {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 10px 18px;
+      border-radius: 12px;
+      margin-bottom: 32px;
+      font-size: 11px;
+      color: #94a3b8;
     }
+    .core-mechanic-pill span.solar { color: var(--solar); font-weight: 800; }
+    .core-mechanic-pill span.void { color: var(--void); font-weight: 800; }
 
-    .btn-action {
+    .btn-launch {
+      width: 220px;
+      height: 52px;
+      border-radius: 12px;
       background: #ffffff;
-      color: #090a0f;
+      color: #06070a;
       font-family: var(--font-display);
       font-weight: 800;
       font-size: 15px;
       letter-spacing: 0.5px;
-      padding: 15px 44px;
-      border-radius: 14px;
       border: none;
       cursor: pointer;
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 10px;
-      box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15);
       transition: transform 0.15s, background 0.15s;
     }
-    .btn-action:active {
-      transform: scale(0.95);
+    .btn-launch:active {
+      transform: scale(0.96);
       background: #e2e8f0;
     }
 
-    .sub-instructions {
-      margin-top: 24px;
-      font-size: 12px;
-      color: #64748b;
-      line-height: 1.6;
-      max-width: 310px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+    /* Minimal Game Over */
+    .gameover-stat {
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: -2px;
+      color: #ffffff;
+      margin: 12px 0 4px 0;
+      font-family: var(--font-display);
     }
-    .sub-instructions b {
+    .gameover-label {
+      font-size: 11px;
+      color: #64748b;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    .meta-row {
+      display: flex;
+      gap: 24px;
+      margin-bottom: 32px;
+      font-size: 12px;
       color: #94a3b8;
+    }
+    .meta-row b {
+      color: #ffffff;
     }
   </style>
 </head>
@@ -378,285 +265,167 @@
   <div id="game-container">
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Tactical Top HUD -->
+    <!-- Sleek Top HUD -->
     <div class="hud">
-      <div class="hud-stat-panel">
-        <div class="hud-tag">
-          <span id="sectorDisplay" class="sector-pill">SECTOR 1</span>
-          <span>SCORE</span>
+      <div class="hud-left">
+        <div id="scoreDisplay" class="score-txt">0</div>
+        <div id="chainDisplay" class="chain-txt">ABSORB x1</div>
+      </div>
+      <div class="graze-gauge-wrap">
+        <span class="graze-lbl">OVERDRIVE</span>
+        <div class="graze-bar-bg">
+          <div id="overdriveBar" class="graze-bar-fill"></div>
         </div>
-        <div id="scoreDisplay" class="score-display">000,000</div>
-        <div id="multiplierDisplay" class="multiplier-tag">COMBO x1.0</div>
-      </div>
-      <div class="hud-actions">
-        <button id="soundBtn" class="icon-btn" aria-label="Audio">
-          <svg viewBox="0 0 24 24"><path d="M11 5L6 9H2v6h4l5 4V5z"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
-        </button>
-        <button id="pauseBtn" class="icon-btn" aria-label="Pause">
-          <svg viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-        </button>
       </div>
     </div>
 
-    <!-- Hull Integrity pips -->
-    <div class="hull-wrap">
-      <div id="hull-1" class="hull-bar active"></div>
-      <div id="hull-2" class="hull-bar active"></div>
-      <div id="hull-3" class="hull-bar active"></div>
+    <!-- Polarity State Footer -->
+    <div class="polarity-hud">
+      <div id="polarityBadge" class="polarity-badge void">
+        <span class="polarity-dot"></span>
+        <span id="polarityLabel">VOID SHIELD</span>
+      </div>
+      <div class="shift-cue">DOUBLE TAP TO POLARIZE</div>
     </div>
 
-    <!-- Threat warning alert -->
-    <div id="threat-warning">
-      <div class="threat-pill">⚠️ HEAVY CAPITAL CLASS INCOMING</div>
-    </div>
-
-    <!-- EMP Overdrive Button -->
-    <div class="emp-container">
-      <button id="empBtn" class="emp-btn">
-        <div id="empBadge" class="emp-badge">1</div>
-        <svg viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="9"/>
-          <path d="M12 3v4M12 17v4M3 12h4M17 12h4M8 8l2.5 2.5M13.5 13.5L16 16M16 8l-2.5 2.5M10.5 13.5L8 16"/>
-        </svg>
-        <span>EMP</span>
-      </button>
-    </div>
-
-    <!-- Start Screen -->
+    <!-- Clean Start Screen (No Bloat Text) -->
     <div id="startScreen" class="screen-overlay">
-      <div class="brand-eyebrow">PRECISION SPACE FLIGHT</div>
-      <div class="brand-title">AERO VOID</div>
-      <div class="brand-subtitle">Hostile armada detected across deep perimeter. Intercept and neutralize.</div>
+      <div class="game-logo">POLARIS</div>
+      <div class="game-byline">IKARUGA DUAL-POLARITY PROTOCOL</div>
 
-      <div class="tactical-card">
-        <div class="card-row">
-          <span class="card-row-label">ALL-TIME BEST</span>
-          <span id="startHighScore" class="card-row-value">0</span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">SHIP HULL</span>
-          <span class="card-row-value" style="color: var(--cyan);">3 CELLS</span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">DIFFICULTY</span>
-          <span class="card-row-value" style="color: var(--amber);">DYNAMIC TACTICAL</span>
-        </div>
+      <div class="core-mechanic-pill">
+        <span class="void">VOID</span> absorbs <span class="void">BLUE</span>
+        &bull;
+        <span class="solar">SOLAR</span> absorbs <span class="solar">ORANGE</span>
       </div>
 
-      <button id="startBtn" class="btn-action">
-        ENGAGE THRUSTERS
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      <button id="startBtn" class="btn-launch">
+        ENGAGE
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
       </button>
-
-      <div class="sub-instructions">
-        <span>👉 <b>Drag anywhere</b> to maneuver interceptor</span>
-        <span>💥 Hostiles fire return munitions & perform evasive maneuvers</span>
-        <span>🛡️ 3 Hull cells before failure. Salvage drops restore integrity</span>
-        <span>⚡ <b>EMP Pulse</b> disarms all hostiles & wipes incoming ordnance</span>
-      </div>
     </div>
 
-    <!-- Mission Failed Screen -->
+    <!-- Minimal Game Over Screen -->
     <div id="gameOverScreen" class="screen-overlay hidden">
-      <div class="brand-eyebrow" style="color: var(--crimson);">HULL BREACH DETECTED</div>
-      <div class="brand-title">VESSEL LOST</div>
-      <div class="brand-subtitle">Your interceptor was neutralized in combat.</div>
+      <div class="game-byline" style="color: #f43f5e; margin-bottom: 0;">TERMINATED</div>
+      <div id="finalScore" class="gameover-stat">0</div>
+      <div class="gameover-label">FINAL SCORE</div>
 
-      <div class="tactical-card">
-        <div class="card-row">
-          <span class="card-row-label">FINAL SCORE</span>
-          <span id="finalScore" class="card-row-value">0</span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">SECTOR REACHED</span>
-          <span id="finalSector" class="card-row-value">Sector 1</span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">MAX COMBAT COMBO</span>
-          <span id="finalCombo" class="card-row-value" style="color: var(--amber);">x1.0</span>
-        </div>
-        <div class="card-row">
-          <span class="card-row-label">RECORD SCORE</span>
-          <span id="finalHighScore" class="card-row-value" style="color: var(--cyan);">0</span>
-        </div>
+      <div class="meta-row">
+        <span>BEST <b id="finalHighScore">0</b></span>
+        <span>ABSORBED <b id="finalAbsorbs">0</b></span>
+        <span>PEAK CHAIN <b id="finalChain">x1</b></span>
       </div>
 
-      <button id="restartBtn" class="btn-action">
-        RELAUNCH INTERCEPTOR
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-      </button>
-    </div>
-
-    <!-- Pause Screen -->
-    <div id="pauseScreen" class="screen-overlay hidden">
-      <div class="brand-eyebrow">TACTICAL STASIS</div>
-      <div class="brand-title">PAUSED</div>
-      <div class="brand-subtitle">Combat operations held in standby mode.</div>
-      <button id="resumeBtn" class="btn-action">RESUME FLIGHT</button>
+      <button id="restartBtn" class="btn-launch">RETRY</button>
     </div>
   </div>
 
   <script>
     /* ==========================================================================
-       CINEMATIC PROCEDURAL AUDIO SYNTHESIZER
-       Custom Web Audio graphs: sub-bass engines, warm laser discharges, resonant EMP
+       TACTICAL PROCEDURAL SYNTHESIZER
+       Harmonic chord shifts upon polarity switch, crisp absorption sounds
        ========================================================================== */
-    class TacticalAudioEngine {
+    class PolarisAudio {
       constructor() {
         this.ctx = null;
         this.muted = false;
         this.master = null;
-        this.sfx = null;
-        this.droneOsc = null;
       }
-
       init() {
         if (this.ctx) return;
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
         if (!AudioCtx) return;
         this.ctx = new AudioCtx();
-
         this.master = this.ctx.createGain();
         this.master.gain.value = 0.28;
         this.master.connect(this.ctx.destination);
-
-        this.sfx = this.ctx.createGain();
-        this.sfx.gain.value = 1.0;
-        this.sfx.connect(this.master);
-
-        this.startEngineDrone();
       }
-
-      toggleMute() {
-        this.muted = !this.muted;
-        if (this.master) {
-          this.master.gain.value = this.muted ? 0 : 0.28;
-        }
-        return this.muted;
-      }
-
-      startEngineDrone() {
-        if (this.droneOsc || !this.ctx) return;
-        // Deep sci-fi engine rumble
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        const filter = this.ctx.createBiquadFilter();
-
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(55, this.ctx.currentTime); // 55Hz low rumble
-
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(110, this.ctx.currentTime);
-
-        gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.master);
-        osc.start();
-        this.droneOsc = osc;
-      }
-
-      playCannon() {
+      playLaser(polarity) {
         if (!this.ctx || this.muted) return;
-        // Crisp, high-tech punchy railgun
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(420, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(80, this.ctx.currentTime + 0.08);
-
-        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
-
+        osc.frequency.setValueAtTime(polarity === 'void' ? 580 : 380, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(120, this.ctx.currentTime + 0.07);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.07);
         osc.connect(gain);
-        gain.connect(this.sfx);
+        gain.connect(this.master);
         osc.start();
-        osc.stop(this.ctx.currentTime + 0.09);
+        osc.stop(this.ctx.currentTime + 0.075);
       }
-
-      playEnemyLaser() {
+      playAbsorb(polarity) {
         if (!this.ctx || this.muted) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(260, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(70, this.ctx.currentTime + 0.1);
-
-        gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
-
+        osc.type = 'sine';
+        const base = polarity === 'void' ? 659.25 : 440;
+        osc.frequency.setValueAtTime(base, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(base * 1.5, this.ctx.currentTime + 0.09);
+        gain.gain.setValueAtTime(0.35, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.09);
         osc.connect(gain);
-        gain.connect(this.sfx);
+        gain.connect(this.master);
         osc.start();
-        osc.stop(this.ctx.currentTime + 0.11);
+        osc.stop(this.ctx.currentTime + 0.1);
       }
-
-      playImpact(heavy = false) {
+      playShift(toPolarity) {
         if (!this.ctx || this.muted) return;
-        const dur = heavy ? 0.35 : 0.15;
-        const bufferSize = Math.floor(this.ctx.sampleRate * dur);
+        const chord = toPolarity === 'void' ? [523.25, 659.25, 783.99] : [349.23, 440, 523.25];
+        chord.forEach(freq => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.18);
+          osc.connect(gain);
+          gain.connect(this.master);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.19);
+        });
+      }
+      playOverdrive() {
+        if (!this.ctx || this.muted) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(140, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(35, this.ctx.currentTime + 0.6);
+        gain.gain.setValueAtTime(0.8, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.6);
+        osc.connect(gain);
+        gain.connect(this.master);
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.65);
+      }
+      playKill() {
+        if (!this.ctx || this.muted) return;
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.25);
         const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const data = buffer.getChannelData(0);
         for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-
         const noise = this.ctx.createBufferSource();
         noise.buffer = buffer;
-
         const filter = this.ctx.createBiquadFilter();
         filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(heavy ? 350 : 700, this.ctx.currentTime);
-        filter.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + dur);
-
+        filter.frequency.setValueAtTime(500, this.ctx.currentTime);
+        filter.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.25);
         const gain = this.ctx.createGain();
-        gain.gain.setValueAtTime(heavy ? 0.8 : 0.35, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + dur);
-
+        gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
         noise.connect(filter);
         filter.connect(gain);
-        gain.connect(this.sfx);
+        gain.connect(this.master);
         noise.start();
-      }
-
-      playSalvage() {
-        if (!this.ctx || this.muted) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, this.ctx.currentTime); // D5
-        osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.14); // A5
-
-        gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.14);
-
-        osc.connect(gain);
-        gain.connect(this.sfx);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.15);
-      }
-
-      playEmp() {
-        if (!this.ctx || this.muted) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(220, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.8);
-
-        gain.gain.setValueAtTime(0.9, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.8);
-
-        osc.connect(gain);
-        gain.connect(this.sfx);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.85);
       }
     }
 
-    const audio = new TacticalAudioEngine();
+    const audio = new PolarisAudio();
 
     /* ==========================================================================
-       TACTICAL SIMULATION & CANVAS ENGINE
+       CANVAS & GAMEPLAY LOOP
        ========================================================================== */
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -676,83 +445,76 @@
     window.addEventListener('resize', resize);
     resize();
 
-    let highScore = parseInt(localStorage.getItem('aerovoid_record') || '0', 10);
-    document.getElementById('startHighScore').innerText = highScore.toLocaleString();
+    let highScore = parseInt(localStorage.getItem('polaris_best') || '0', 10);
 
-    // Game state
+    // Game variables
     let state = 'start';
     let score = 0;
-    let combo = 1;
-    let maxCombo = 1;
-    let comboTimer = 0;
-    let sector = 1;
+    let chain = 1;
+    let maxChain = 1;
+    let totalAbsorbed = 0;
+    let overdrive = 0;
     let gameTime = 0;
     let lastPlayerFire = 0;
     let screenShake = 0;
-    let empCharges = 1;
 
-    // Player craft
-    const ship = {
+    // Player Craft (Ikaruga dual polarity)
+    const player = {
       x: width / 2,
       y: height - 140,
       targetX: width / 2,
       targetY: height - 140,
-      radius: 17,
-      hull: 3,
-      maxHull: 3,
-      invulnTimer: 0,
-      plasmaOverdrive: 0,
-      spreadTimer: 0
+      radius: 15,
+      polarity: 'void', // 'void' (blue) or 'solar' (orange)
+      invuln: 0
     };
 
     // Entities
-    let starfield = [];
-    let nebulaDust = [];
+    let stars = [];
     let playerBullets = [];
-    let enemyBullets = [];
-    let enemies = [];
-    let salvages = [];
-    let powerCores = [];
+    let enemyBullets = []; // Polarized bullets: void or solar
+    let enemies = []; // Polarized craft: void or solar
     let particles = [];
-    let damageIndicators = [];
+    let absorbRings = [];
 
-    // Initialize Deep Space Ambience
-    for (let i = 0; i < 75; i++) {
-      starfield.push({
+    // Background Stars
+    for (let i = 0; i < 70; i++) {
+      stars.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        speed: Math.random() * 1.5 + 0.4,
-        size: Math.random() * 1.6 + 0.5,
+        speed: Math.random() * 1.8 + 0.5,
+        size: Math.random() * 1.5 + 0.5,
         alpha: Math.random() * 0.7 + 0.2
       });
     }
 
-    for (let i = 0; i < 4; i++) {
-      nebulaDust.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        radius: Math.random() * 140 + 120,
-        speed: 0.2,
-        color: i % 2 === 0 ? 'rgba(56, 189, 248, 0.03)' : 'rgba(168, 85, 247, 0.025)'
-      });
-    }
-
-    // Touch Handling - Direct thumb tracking with velocity smoothing
+    // Touch Controls: Drag anywhere to fly, double-tap to switch polarity
     let isTouching = false;
     let touchStartX = 0;
     let touchStartY = 0;
-    let shipStartX = 0;
-    let shipStartY = 0;
+    let playerStartX = 0;
+    let playerStartY = 0;
+    let lastTapTime = 0;
 
     window.addEventListener('touchstart', (e) => {
       audio.init();
       if (state !== 'playing') return;
       const t = e.touches[0];
+      const now = performance.now();
+
+      // Double tap detector (within 280ms)
+      if (now - lastTapTime < 280) {
+        togglePolarity();
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now;
+      }
+
       isTouching = true;
       touchStartX = t.clientX;
       touchStartY = t.clientY;
-      shipStartX = ship.x;
-      shipStartY = ship.y;
+      playerStartX = player.x;
+      playerStartY = player.y;
     }, { passive: false });
 
     window.addEventListener('touchmove', (e) => {
@@ -761,241 +523,177 @@
       const t = e.touches[0];
       const dx = t.clientX - touchStartX;
       const dy = t.clientY - touchStartY;
-      ship.targetX = Math.max(24, Math.min(width - 24, shipStartX + dx));
-      ship.targetY = Math.max(80, Math.min(height - 40, shipStartY + dy));
+      player.targetX = Math.max(20, Math.min(width - 20, playerStartX + dx));
+      player.targetY = Math.max(60, Math.min(height - 40, playerStartY + dy));
     }, { passive: false });
 
     window.addEventListener('touchend', () => { isTouching = false; });
 
-    // Mouse tracking for desktop previews
-    let isMouseDown = false;
+    // Desktop testing support
     window.addEventListener('mousedown', (e) => {
-      if (e.target.closest('.hud') || e.target.closest('.emp-container') || e.target.closest('.screen-overlay')) return;
+      if (e.target.closest('.screen-overlay')) return;
       audio.init();
       if (state !== 'playing') return;
-      isMouseDown = true;
-      ship.targetX = e.clientX;
-      ship.targetY = e.clientY;
+      const now = performance.now();
+      if (now - lastTapTime < 280) {
+        togglePolarity();
+        lastTapTime = 0;
+      } else {
+        lastTapTime = now;
+      }
+      player.targetX = e.clientX;
+      player.targetY = e.clientY;
     });
-    window.addEventListener('mousemove', (e) => {
-      if (state !== 'playing' || !isMouseDown) return;
-      ship.targetX = Math.max(24, Math.min(width - 24, e.clientX));
-      ship.targetY = Math.max(80, Math.min(height - 40, e.clientY));
-    });
-    window.addEventListener('mouseup', () => { isMouseDown = false; });
 
-    // UI Buttons
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' || e.code === 'KeyX') {
+        togglePolarity();
+      }
+    });
+
+    function togglePolarity() {
+      if (state !== 'playing') return;
+      player.polarity = player.polarity === 'void' ? 'solar' : 'void';
+      audio.playShift(player.polarity);
+      if ('vibrate' in navigator) navigator.vibrate([25]);
+
+      // Shift flash particles
+      for (let i = 0; i < 18; i++) {
+        const ang = (Math.PI * 2 / 18) * i;
+        particles.push({
+          x: player.x,
+          y: player.y,
+          vx: Math.cos(ang) * 9,
+          vy: Math.sin(ang) * 9,
+          radius: 2.5,
+          color: player.polarity === 'void' ? '#38bdf8' : '#f59e0b',
+          life: 0.3,
+          maxLife: 0.3
+        });
+      }
+
+      const badge = document.getElementById('polarityBadge');
+      const label = document.getElementById('polarityLabel');
+      if (player.polarity === 'void') {
+        badge.className = 'polarity-badge void';
+        label.innerText = 'VOID SHIELD';
+      } else {
+        badge.className = 'polarity-badge solar';
+        label.innerText = 'SOLAR SHIELD';
+      }
+    }
+
+    // UI Listeners
     document.getElementById('startBtn').addEventListener('click', startGame);
     document.getElementById('restartBtn').addEventListener('click', startGame);
-    document.getElementById('pauseBtn').addEventListener('click', togglePause);
-    document.getElementById('resumeBtn').addEventListener('click', togglePause);
-    document.getElementById('soundBtn').addEventListener('click', () => {
-      audio.init();
-      const muted = audio.toggleMute();
-      document.getElementById('soundBtn').style.opacity = muted ? '0.4' : '1.0';
-    });
-    document.getElementById('empBtn').addEventListener('click', triggerEMP);
 
     function startGame() {
       audio.init();
       state = 'playing';
       score = 0;
-      combo = 1;
-      maxCombo = 1;
-      comboTimer = 0;
-      sector = 1;
+      chain = 1;
+      maxChain = 1;
+      totalAbsorbed = 0;
+      overdrive = 0;
       gameTime = 0;
       lastPlayerFire = 0;
       screenShake = 0;
-      empCharges = 1;
 
-      ship.x = width / 2;
-      ship.y = height - 140;
-      ship.targetX = ship.x;
-      ship.targetY = ship.y;
-      ship.hull = 3;
-      ship.invulnTimer = 2.0;
-      ship.spreadTimer = 0;
-      ship.plasmaOverdrive = 0;
+      player.x = width / 2;
+      player.y = height - 140;
+      player.targetX = player.x;
+      player.targetY = player.y;
+      player.polarity = 'void';
+      player.invuln = 1.5;
 
       playerBullets = [];
       enemyBullets = [];
       enemies = [];
-      salvages = [];
-      powerCores = [];
       particles = [];
-      damageIndicators = [];
+      absorbRings = [];
 
+      document.getElementById('polarityBadge').className = 'polarity-badge void';
+      document.getElementById('polarityLabel').innerText = 'VOID SHIELD';
       document.getElementById('startScreen').classList.add('hidden');
       document.getElementById('gameOverScreen').classList.add('hidden');
-      document.getElementById('pauseScreen').classList.add('hidden');
-      updateHUD();
-    }
-
-    function togglePause() {
-      if (state === 'playing') {
-        state = 'paused';
-        document.getElementById('pauseScreen').classList.remove('hidden');
-      } else if (state === 'paused') {
-        state = 'playing';
-        document.getElementById('pauseScreen').classList.add('hidden');
-      }
-    }
-
-    function triggerEMP() {
-      if (state !== 'playing' || empCharges <= 0) return;
-      empCharges--;
-      screenShake = 16;
-      audio.playEmp();
-      if ('vibrate' in navigator) navigator.vibrate([120, 60, 160]);
-
-      // Dissolve all incoming enemy ordnance
-      enemyBullets.forEach(b => {
-        spawnSparks(b.x, b.y, '#38bdf8', 4);
-      });
-      enemyBullets = [];
-
-      // Heavily damage & stun all active hostiles
-      enemies.forEach(e => {
-        e.hp -= 4;
-        spawnSparks(e.x, e.y, '#38bdf8', 12);
-        if (e.hp <= 0) {
-          score += e.baseScore * combo;
-          spawnExplosion(e.x, e.y, e.color, 24);
-          spawnSalvage(e.x, e.y, 3);
-        }
-      });
-      enemies = enemies.filter(e => e.hp > 0);
-
-      // Expanding EMP ring
-      for (let i = 0; i < 48; i++) {
-        const ang = (Math.PI * 2 / 48) * i;
-        particles.push({
-          x: ship.x,
-          y: ship.y,
-          vx: Math.cos(ang) * 15,
-          vy: Math.sin(ang) * 15,
-          radius: 3,
-          color: '#38bdf8',
-          life: 0.5,
-          maxLife: 0.5
-        });
-      }
-
-      spawnIndicator(ship.x, ship.y - 36, 'EMP DISCHARGE', '#38bdf8');
       updateHUD();
     }
 
     function updateHUD() {
-      document.getElementById('scoreDisplay').innerText = score.toLocaleString().padStart(6, '0');
-      document.getElementById('multiplierDisplay').innerText = `COMBO x${combo.toFixed(1)}`;
-      document.getElementById('sectorDisplay').innerText = `SECTOR ${sector}`;
-      document.getElementById('empBadge').innerText = empCharges;
-
-      for (let i = 1; i <= 3; i++) {
-        const bar = document.getElementById(`hull-${i}`);
-        if (bar) {
-          if (ship.hull >= i) {
-            bar.className = ship.hull === 1 ? 'hull-bar danger' : 'hull-bar active';
-          } else {
-            bar.className = 'hull-bar';
-          }
-        }
-      }
+      document.getElementById('scoreDisplay').innerText = score.toLocaleString();
+      document.getElementById('chainDisplay').innerText = `ABSORB x${chain.toFixed(1)}`;
+      document.getElementById('overdriveBar').style.width = `${Math.min(100, overdrive)}%`;
     }
 
-    function spawnIndicator(x, y, text, color = '#f1f5f9') {
-      damageIndicators.push({
-        x, y, text, color,
-        life: 0.75,
-        vy: -1.4
+    function releaseOverdrive() {
+      overdrive = 0;
+      screenShake = 18;
+      audio.playOverdrive();
+      if ('vibrate' in navigator) navigator.vibrate([100, 50, 150]);
+
+      // Massive homing burst that vaporizes opposite polarity hostiles
+      enemies.forEach(e => {
+        score += e.baseScore * chain * 2;
+        spawnExplosion(e.x, e.y, e.polarity === 'void' ? '#38bdf8' : '#f59e0b', 24);
       });
+      enemies = [];
+
+      // Clear all bullets
+      enemyBullets = [];
+
+      // Expanding dual nova ring
+      for (let i = 0; i < 40; i++) {
+        const ang = (Math.PI * 2 / 40) * i;
+        particles.push({
+          x: player.x,
+          y: player.y,
+          vx: Math.cos(ang) * 14,
+          vy: Math.sin(ang) * 14,
+          radius: 3,
+          color: i % 2 === 0 ? '#38bdf8' : '#f59e0b',
+          life: 0.55,
+          maxLife: 0.55
+        });
+      }
+      updateHUD();
     }
 
-    function spawnSparks(x, y, color, count = 6) {
+    function spawnExplosion(x, y, color, count = 16) {
       for (let i = 0; i < count; i++) {
         const ang = Math.random() * Math.PI * 2;
-        const spd = Math.random() * 6 + 1.5;
+        const spd = Math.random() * 8 + 2;
         particles.push({
           x, y,
           vx: Math.cos(ang) * spd,
           vy: Math.sin(ang) * spd,
-          radius: Math.random() * 2 + 1,
+          radius: Math.random() * 3 + 1,
           color,
-          life: 0.35,
-          maxLife: 0.35
+          life: 0.45,
+          maxLife: 0.45
         });
       }
-    }
-
-    function spawnExplosion(x, y, color, count = 20) {
-      for (let i = 0; i < count; i++) {
-        const ang = Math.random() * Math.PI * 2;
-        const spd = Math.random() * 9 + 2;
-        particles.push({
-          x, y,
-          vx: Math.cos(ang) * spd,
-          vy: Math.sin(ang) * spd,
-          radius: Math.random() * 3 + 1.5,
-          color,
-          life: 0.5,
-          maxLife: 0.5
-        });
-      }
-    }
-
-    function spawnSalvage(x, y, count = 2) {
-      for (let i = 0; i < count; i++) {
-        salvages.push({
-          x: x + (Math.random() - 0.5) * 16,
-          y: y + (Math.random() - 0.5) * 16,
-          vx: (Math.random() - 0.5) * 2,
-          vy: Math.random() * 2 + 1.2,
-          radius: 5,
-          rot: Math.random() * Math.PI,
-          value: 120
-        });
-      }
-    }
-
-    function spawnPowerCore(x, y) {
-      const types = ['hull', 'spread', 'emp'];
-      const type = types[Math.floor(Math.random() * types.length)];
-      powerCores.push({
-        x, y,
-        vy: 1.8,
-        type,
-        rot: 0,
-        radius: 12
-      });
-    }
-
-    function triggerThreatWarning() {
-      const el = document.getElementById('threat-warning');
-      el.classList.add('visible');
-      setTimeout(() => el.classList.remove('visible'), 2800);
     }
 
     function gameOver() {
       state = 'gameover';
-      audio.playImpact(true);
+      audio.playKill();
       if ('vibrate' in navigator) navigator.vibrate([200, 100, 300]);
       screenShake = 22;
 
       if (score > highScore) {
         highScore = score;
-        localStorage.setItem('aerovoid_record', highScore.toString());
+        localStorage.setItem('polaris_best', highScore.toString());
       }
 
       document.getElementById('finalScore').innerText = score.toLocaleString();
-      document.getElementById('finalSector').innerText = `Sector ${sector}`;
-      document.getElementById('finalCombo').innerText = `x${maxCombo.toFixed(1)}`;
       document.getElementById('finalHighScore').innerText = highScore.toLocaleString();
+      document.getElementById('finalAbsorbs').innerText = totalAbsorbed.toLocaleString();
+      document.getElementById('finalChain').innerText = `x${maxChain.toFixed(1)}`;
       document.getElementById('gameOverScreen').classList.remove('hidden');
     }
 
     /* ==========================================================================
-       TACTICAL SIMULATION TICK
+       TICK LOOP
        ========================================================================== */
     let lastTime = performance.now();
 
@@ -1005,18 +703,9 @@
       if (dt > 0.1) dt = 0.1;
       lastTime = now;
 
-      // Update nebula backgrounds
-      nebulaDust.forEach(n => {
-        n.y += n.speed;
-        if (n.y - n.radius > height) {
-          n.y = -n.radius;
-          n.x = Math.random() * width;
-        }
-      });
-
-      // Update stars
-      starfield.forEach(s => {
-        s.y += s.speed * (state === 'playing' ? 1.6 : 0.6);
+      // Stars
+      stars.forEach(s => {
+        s.y += s.speed * (state === 'playing' ? 2.5 : 0.8);
         if (s.y > height) {
           s.y = 0;
           s.x = Math.random() * width;
@@ -1025,210 +714,124 @@
 
       if (state === 'playing') {
         gameTime += dt;
-        sector = 1 + Math.floor(gameTime / 30); // Advance sector every 30s
 
-        if (comboTimer > 0) {
-          comboTimer -= dt;
-          if (comboTimer <= 0) {
-            combo = 1;
-            updateHUD();
-          }
-        }
+        // Player movement interpolation
+        player.x += (player.targetX - player.x) * 0.28;
+        player.y += (player.targetY - player.y) * 0.28;
 
-        // Ship movement smoothing
-        ship.x += (ship.targetX - ship.x) * 0.24;
-        ship.y += (ship.targetY - ship.y) * 0.24;
+        if (player.invuln > 0) player.invuln -= dt;
 
-        if (ship.invulnTimer > 0) ship.invulnTimer -= dt;
-        if (ship.spreadTimer > 0) ship.spreadTimer -= dt;
-
-        // Player Auto-Firing Railguns
-        const fireCadence = 0.13;
-        if (gameTime - lastPlayerFire > fireCadence) {
+        // Auto cannon
+        if (gameTime - lastPlayerFire > 0.11) {
           lastPlayerFire = gameTime;
-          audio.playCannon();
+          audio.playLaser(player.polarity);
 
-          if (ship.spreadTimer > 0) {
-            [-0.2, -0.07, 0.07, 0.2].forEach(ang => {
-              playerBullets.push({
-                x: ship.x,
-                y: ship.y - 18,
-                vx: Math.sin(ang) * 18,
-                vy: -Math.cos(ang) * 18
-              });
+          [-8, 8].forEach(offX => {
+            playerBullets.push({
+              x: player.x + offX,
+              y: player.y - 16,
+              vx: 0,
+              vy: -20,
+              polarity: player.polarity
             });
-          } else {
-            [-9, 9].forEach(offX => {
-              playerBullets.push({
-                x: ship.x + offX,
-                y: ship.y - 18,
-                vx: 0,
-                vy: -18
-              });
-            });
-          }
+          });
         }
 
-        // Dynamic Enemy Spawning & Tactical AI
-        // Difficulty curves smoothly with sector and elapsed time
-        const spawnDelay = Math.max(0.45, 1.6 - (sector * 0.15) - (gameTime * 0.005));
-        if (Math.random() < dt / spawnDelay) {
-          const rand = Math.random();
-          if (rand < 0.55) {
-            // Skirmisher: Fast, erratic strafe, fires single aimed laser
-            enemies.push({
-              type: 'skirmisher',
-              x: Math.random() * (width - 60) + 30,
-              y: -30,
-              vx: (Math.random() - 0.5) * 3,
-              vy: 2.8 + Math.random() * 1.5,
-              hp: 2,
-              radius: 14,
-              color: '#38bdf8',
-              baseScore: 150,
-              lastFire: gameTime + Math.random() * 0.5,
-              fireCadence: 1.8
-            });
-          } else if (rand < 0.85) {
-            // Gunship: Heavy armor, 3-round spread salvos
-            enemies.push({
-              type: 'gunship',
-              x: Math.random() * (width - 80) + 40,
-              y: -40,
-              vx: (Math.random() - 0.5) * 1.2,
-              vy: 1.6,
-              hp: 6,
-              radius: 22,
-              color: '#f59e0b',
-              baseScore: 350,
-              lastFire: gameTime + 0.8,
-              fireCadence: 2.2
-            });
-          } else if (gameTime > 15) {
-            // Dreadnought: Massive armored fortress, dual laser batteries
-            triggerThreatWarning();
-            enemies.push({
-              type: 'dreadnought',
-              x: width / 2 + (Math.random() - 0.5) * 80,
-              y: -60,
-              vx: (Math.random() - 0.5) * 0.8,
-              vy: 0.9,
-              hp: 14,
-              radius: 34,
-              color: '#f43f5e',
-              baseScore: 800,
-              lastFire: gameTime + 1.0,
-              fireCadence: 2.5
-            });
-          }
+        // Bullet Hell Spawning - Rapid, Dense, Polarized Patterns
+        // Difficulty ramps up fast: multiple enemies per wave, complex bullet curtains
+        const spawnCadence = Math.max(0.35, 1.3 - (gameTime * 0.015));
+        if (Math.random() < dt / spawnCadence) {
+          const p = Math.random() < 0.5 ? 'void' : 'solar';
+          const types = [
+            { type: 'scout', hp: 2, radius: 14, score: 200, vy: 3.2 },
+            { type: 'frigate', hp: 7, radius: 22, score: 500, vy: 1.8 }
+          ];
+          const choice = types[Math.random() < 0.75 ? 0 : 1];
+          enemies.push({
+            type: choice.type,
+            polarity: p,
+            x: Math.random() * (width - 60) + 30,
+            y: -30,
+            vx: (Math.random() - 0.5) * 2,
+            vy: choice.vy,
+            hp: choice.hp,
+            radius: choice.radius,
+            baseScore: choice.score,
+            lastFire: gameTime + Math.random() * 0.3,
+            fireRate: choice.type === 'scout' ? 1.2 : 0.7,
+            bulletPattern: choice.type === 'scout' ? 'aimed' : 'spiral',
+            spiralAng: 0
+          });
         }
 
         // Update Player Bullets
         for (let i = playerBullets.length - 1; i >= 0; i--) {
           const b = playerBullets[i];
-          b.x += b.vx;
           b.y += b.vy;
-          if (b.y < -30 || b.x < -30 || b.x > width + 30) playerBullets.splice(i, 1);
+          if (b.y < -30) playerBullets.splice(i, 1);
         }
 
-        // Update Enemy Bullets
-        for (let i = enemyBullets.length - 1; i >= 0; i--) {
-          const eb = enemyBullets[i];
-          eb.x += eb.vx;
-          eb.y += eb.vy;
-
-          // Check collision with player
-          const distToShip = Math.hypot(eb.x - ship.x, eb.y - ship.y);
-          if (distToShip < ship.radius + 4 && ship.invulnTimer <= 0) {
-            enemyBullets.splice(i, 1);
-            ship.hull--;
-            ship.invulnTimer = 1.4;
-            screenShake = 14;
-            audio.playImpact(true);
-            if ('vibrate' in navigator) navigator.vibrate([150]);
-            spawnExplosion(ship.x, ship.y, '#f43f5e', 14);
-            spawnIndicator(ship.x, ship.y - 30, '-1 CELL', '#f43f5e');
-            updateHUD();
-
-            if (ship.hull <= 0) {
-              gameOver();
-              return;
-            }
-            continue;
-          }
-
-          if (eb.y > height + 30 || eb.x < -30 || eb.x > width + 30) {
-            enemyBullets.splice(i, 1);
-          }
-        }
-
-        // Update Enemies
+        // Update Enemies & Attack Patterns
         for (let i = enemies.length - 1; i >= 0; i--) {
           const e = enemies[i];
           e.x += e.vx;
           e.y += e.vy;
 
-          if (e.x < e.radius + 10 || e.x > width - e.radius - 10) e.vx *= -1;
+          if (e.x < e.radius || e.x > width - e.radius) e.vx *= -1;
 
-          // Enemy firing logic
-          if (gameTime - e.lastFire > e.fireCadence && e.y > 40 && e.y < height - 120) {
+          // Enemy bullet storm generation
+          if (gameTime - e.lastFire > e.fireRate && e.y > 30 && e.y < height - 100) {
             e.lastFire = gameTime;
-            audio.playEnemyLaser();
 
-            if (e.type === 'skirmisher') {
-              const ang = Math.atan2(ship.y - e.y, ship.x - e.x);
-              enemyBullets.push({
-                x: e.x,
-                y: e.y + e.radius,
-                vx: Math.cos(ang) * 5.5,
-                vy: Math.sin(ang) * 5.5
-              });
-            } else if (e.type === 'gunship') {
-              [-0.25, 0, 0.25].forEach(offset => {
-                const ang = Math.atan2(ship.y - e.y, ship.x - e.x) + offset;
+            if (e.bulletPattern === 'aimed') {
+              // 3-way aimed fan
+              const baseAng = Math.atan2(player.y - e.y, player.x - e.x);
+              [-0.2, 0, 0.2].forEach(offset => {
                 enemyBullets.push({
                   x: e.x,
                   y: e.y + e.radius,
-                  vx: Math.cos(ang) * 4.8,
-                  vy: Math.sin(ang) * 4.8
+                  vx: Math.cos(baseAng + offset) * 4.6,
+                  vy: Math.sin(baseAng + offset) * 4.6,
+                  polarity: e.polarity,
+                  radius: 5
                 });
               });
-            } else if (e.type === 'dreadnought') {
-              [-18, 18].forEach(offX => {
+            } else {
+              // Dense spiral curtain
+              e.spiralAng += 0.6;
+              for (let k = 0; k < 4; k++) {
+                const ang = e.spiralAng + (Math.PI / 2) * k;
                 enemyBullets.push({
-                  x: e.x + offX,
+                  x: e.x,
                   y: e.y + e.radius,
-                  vx: (Math.random() - 0.5) * 1.5,
-                  vy: 5.2
+                  vx: Math.cos(ang) * 4.0,
+                  vy: Math.sin(ang) * 4.0,
+                  polarity: e.polarity,
+                  radius: 5
                 });
-              });
+              }
             }
           }
 
-          // Bullet to enemy collision
+          // Player Bullet hitting enemy
           for (let j = playerBullets.length - 1; j >= 0; j--) {
-            const b = playerBullets[j];
-            const dist = Math.hypot(e.x - b.x, e.y - b.y);
+            const pb = playerBullets[j];
+            const dist = Math.hypot(e.x - pb.x, e.y - pb.y);
             if (dist < e.radius + 8) {
               playerBullets.splice(j, 1);
-              e.hp--;
-              spawnSparks(b.x, b.y, '#ffffff', 4);
+
+              // Ikaruga rule: Opposite polarity deals 2x damage!
+              const damage = pb.polarity !== e.polarity ? 2 : 1;
+              e.hp -= damage;
 
               if (e.hp <= 0) {
-                audio.playImpact(e.type === 'dreadnought');
-                screenShake = e.type === 'dreadnought' ? 12 : 5;
-                if ('vibrate' in navigator) navigator.vibrate([40]);
-                spawnExplosion(e.x, e.y, e.color, e.type === 'dreadnought' ? 32 : 16);
-                spawnSalvage(e.x, e.y, e.type === 'dreadnought' ? 6 : 2);
+                audio.playKill();
+                screenShake = 6;
+                spawnExplosion(e.x, e.y, e.polarity === 'void' ? '#38bdf8' : '#f59e0b', 18);
 
-                if (Math.random() < 0.22) spawnPowerCore(e.x, e.y);
-
-                score += Math.floor(e.baseScore * combo);
-                combo = Math.min(5.0, combo + 0.2);
-                if (combo > maxCombo) maxCombo = combo;
-                comboTimer = 3.0;
-
-                spawnIndicator(e.x, e.y, `+${Math.floor(e.baseScore * combo)}`, e.color);
+                // Opposite kills award 2x score bonus
+                const scoreMult = pb.polarity !== e.polarity ? 2 : 1;
+                score += Math.floor(e.baseScore * chain * scoreMult);
                 enemies.splice(i, 1);
                 updateHUD();
                 break;
@@ -1236,79 +839,65 @@
             }
           }
 
-          // Ship to enemy body collision
+          // Enemy body collision
           if (enemies[i]) {
-            const shipDist = Math.hypot(e.x - ship.x, e.y - ship.y);
-            if (shipDist < e.radius + ship.radius && ship.invulnTimer <= 0) {
-              ship.hull -= 2;
-              ship.invulnTimer = 1.8;
-              screenShake = 18;
-              audio.playImpact(true);
-              if ('vibrate' in navigator) navigator.vibrate([180]);
+            const shipDist = Math.hypot(e.x - player.x, e.y - player.y);
+            if (shipDist < e.radius + player.radius && player.invuln <= 0) {
+              gameOver();
+              return;
+            } else if (e.y > height + 50) {
               enemies.splice(i, 1);
-              spawnExplosion(ship.x, ship.y, '#f43f5e', 20);
-              spawnIndicator(ship.x, ship.y - 30, 'COLLISION! -2 CELLS', '#f43f5e');
-              updateHUD();
+            }
+          }
+        }
 
-              if (ship.hull <= 0) {
+        // Update Enemy Bullets & POLARITY ABSORPTION MECHANIC
+        for (let i = enemyBullets.length - 1; i >= 0; i--) {
+          const eb = enemyBullets[i];
+          eb.x += eb.vx;
+          eb.y += eb.vy;
+
+          const dist = Math.hypot(eb.x - player.x, eb.y - player.y);
+
+          // Absorption Zone (Graze & absorb identical polarity)
+          if (dist < player.radius + eb.radius + 4) {
+            if (eb.polarity === player.polarity) {
+              // ABSORPTION SUCCESS!
+              audio.playAbsorb(player.polarity);
+              enemyBullets.splice(i, 1);
+
+              totalAbsorbed++;
+              score += Math.floor(50 * chain);
+              chain = Math.min(8.0, chain + 0.1);
+              if (chain > maxChain) maxChain = chain;
+
+              overdrive += 3.5;
+              if (overdrive >= 100) {
+                releaseOverdrive();
+              }
+
+              // Absorption ripple
+              absorbRings.push({
+                x: player.x,
+                y: player.y,
+                radius: 12,
+                color: player.polarity === 'void' ? '#38bdf8' : '#f59e0b',
+                alpha: 1.0
+              });
+
+              updateHUD();
+              continue;
+            } else {
+              // WRONG POLARITY = INSTANT DEATH!
+              if (player.invuln <= 0) {
                 gameOver();
                 return;
               }
-            } else if (e.y > height + 60) {
-              enemies.splice(i, 1);
             }
           }
-        }
 
-        // Update Salvage Nanites (Score Gems)
-        for (let i = salvages.length - 1; i >= 0; i--) {
-          const s = salvages[i];
-          // Magnetism
-          const d = Math.hypot(ship.x - s.x, ship.y - s.y);
-          if (d < 160) {
-            s.x += ((ship.x - s.x) / d) * 11;
-            s.y += ((ship.y - s.y) / d) * 11;
-          }
-          s.x += s.vx;
-          s.y += s.vy;
-          s.rot += 0.05;
-
-          if (d < s.radius + ship.radius + 8) {
-            audio.playSalvage();
-            score += Math.floor(s.value * combo);
-            salvages.splice(i, 1);
-            updateHUD();
-          } else if (s.y > height + 40) {
-            salvages.splice(i, 1);
-          }
-        }
-
-        // Update Power Cores
-        for (let i = powerCores.length - 1; i >= 0; i--) {
-          const p = powerCores[i];
-          p.y += p.vy;
-          p.rot += 0.04;
-
-          const dist = Math.hypot(p.x - ship.x, p.y - ship.y);
-          if (dist < p.radius + ship.radius) {
-            audio.playSalvage();
-            if ('vibrate' in navigator) navigator.vibrate([60, 40, 60]);
-
-            if (p.type === 'hull') {
-              ship.hull = Math.min(3, ship.hull + 1);
-              spawnIndicator(ship.x, ship.y - 30, 'HULL REPAIRED', '#10b981');
-            } else if (p.type === 'spread') {
-              ship.spreadTimer = 10;
-              spawnIndicator(ship.x, ship.y - 30, 'SPREAD RAILGUNS', '#f59e0b');
-            } else if (p.type === 'emp') {
-              empCharges = Math.min(3, empCharges + 1);
-              spawnIndicator(ship.x, ship.y - 30, '+1 EMP CELL', '#38bdf8');
-            }
-
-            powerCores.splice(i, 1);
-            updateHUD();
-          } else if (p.y > height + 40) {
-            powerCores.splice(i, 1);
+          if (eb.y > height + 30 || eb.x < -30 || eb.x > width + 30 || eb.y < -30) {
+            enemyBullets.splice(i, 1);
           }
         }
       }
@@ -1322,265 +911,161 @@
         if (p.life <= 0) particles.splice(i, 1);
       }
 
-      // Damage & Score Indicators
-      for (let i = damageIndicators.length - 1; i >= 0; i--) {
-        const t = damageIndicators[i];
-        t.y += t.vy;
-        t.life -= dt;
-        if (t.life <= 0) damageIndicators.splice(i, 1);
+      // Absorb Rings
+      for (let i = absorbRings.length - 1; i >= 0; i--) {
+        const r = absorbRings[i];
+        r.radius += 2.5;
+        r.alpha -= dt * 4;
+        if (r.alpha <= 0) absorbRings.splice(i, 1);
       }
 
       /* ==========================================================================
-         RENDER PIPELINE
+         RENDER
          ========================================================================== */
       ctx.save();
       if (screenShake > 0) {
         ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
-        screenShake *= 0.86;
+        screenShake *= 0.85;
         if (screenShake < 0.4) screenShake = 0;
       }
 
-      // Void Background
-      ctx.fillStyle = '#090a0f';
+      // Space Clear
+      ctx.fillStyle = '#06070a';
       ctx.fillRect(0, 0, width, height);
 
-      // Deep space ambient nebula clouds
-      nebulaDust.forEach(n => {
-        const g = ctx.createRadialGradient(n.x, n.y, 10, n.x, n.y, n.radius);
-        g.addColorStop(0, n.color);
-        g.addColorStop(1, 'rgba(0,0,0,0)');
-        ctx.fillStyle = g;
-        ctx.beginPath();
-        ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
       // Stars
-      starfield.forEach(s => {
-        ctx.fillStyle = `rgba(226, 232, 240, ${s.alpha})`;
+      stars.forEach(s => {
+        ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`;
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // Player Projectiles: Precise white/cyan energy slugs
+      // Absorb Rings
+      absorbRings.forEach(r => {
+        ctx.strokeStyle = r.color;
+        ctx.globalAlpha = Math.max(0, r.alpha);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+      ctx.globalAlpha = 1.0;
+
+      // Player Bullets
       playerBullets.forEach(b => {
-        ctx.fillStyle = '#38bdf8';
+        const col = b.polarity === 'void' ? '#38bdf8' : '#f59e0b';
+        ctx.fillStyle = col;
         ctx.beginPath();
-        ctx.ellipse(b.x, b.y, 2.5, 9, 0, 0, Math.PI * 2);
+        ctx.ellipse(b.x, b.y, 2.5, 8, 0, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.ellipse(b.x, b.y, 1.2, 5, 0, 0, Math.PI * 2);
+        ctx.ellipse(b.x, b.y, 1.2, 4, 0, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // Enemy Projectiles: Crimson ballistic bolts
+      // Enemy Polarized Bullets: Distinct solid orbs with inner white core
       enemyBullets.forEach(eb => {
-        ctx.fillStyle = '#f43f5e';
+        const col = eb.polarity === 'void' ? '#38bdf8' : '#f59e0b';
+        ctx.fillStyle = col;
         ctx.beginPath();
-        ctx.arc(eb.x, eb.y, 4, 0, Math.PI * 2);
+        ctx.arc(eb.x, eb.y, eb.radius, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(eb.x, eb.y, 1.8, 0, Math.PI * 2);
+        ctx.arc(eb.x, eb.y, eb.radius * 0.45, 0, Math.PI * 2);
         ctx.fill();
       });
 
-      // Draw Hostile Craft
+      // Enemies
       enemies.forEach(e => {
         ctx.save();
         ctx.translate(e.x, e.y);
+        const col = e.polarity === 'void' ? '#38bdf8' : '#f59e0b';
 
-        if (e.type === 'skirmisher') {
-          // Sleek angular dart interceptor
-          ctx.fillStyle = '#1e293b';
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 2;
+        ctx.fillStyle = '#111827';
+        ctx.strokeStyle = col;
+        ctx.lineWidth = 2;
+
+        if (e.type === 'scout') {
+          // Sharp angular wedge
           ctx.beginPath();
           ctx.moveTo(0, e.radius);
-          ctx.lineTo(-e.radius * 0.9, -e.radius * 0.8);
+          ctx.lineTo(-e.radius * 0.8, -e.radius * 0.7);
           ctx.lineTo(0, -e.radius * 0.2);
-          ctx.lineTo(e.radius * 0.9, -e.radius * 0.8);
+          ctx.lineTo(e.radius * 0.8, -e.radius * 0.7);
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
-
-          // Core sensor
-          ctx.fillStyle = '#38bdf8';
+        } else {
+          // Diamond Cruiser
           ctx.beginPath();
-          ctx.arc(0, e.radius * 0.2, 2.5, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (e.type === 'gunship') {
-          // Hexagonal armored battle cruiser
-          ctx.fillStyle = '#1e293b';
-          ctx.strokeStyle = '#f59e0b';
-          ctx.lineWidth = 2.5;
-
-          ctx.beginPath();
-          ctx.moveTo(0, e.radius);
-          ctx.lineTo(-e.radius * 0.9, e.radius * 0.3);
-          ctx.lineTo(-e.radius * 0.7, -e.radius);
-          ctx.lineTo(e.radius * 0.7, -e.radius);
-          ctx.lineTo(e.radius * 0.9, e.radius * 0.3);
-          ctx.closePath();
-          ctx.fill();
-          ctx.stroke();
-
-          // Twin weapon hardpoints
-          ctx.fillStyle = '#f59e0b';
-          ctx.fillRect(-12, -4, 4, 8);
-          ctx.fillRect(8, -4, 4, 8);
-        } else if (e.type === 'dreadnought') {
-          // Massive capital flagship
-          ctx.fillStyle = '#0f172a';
-          ctx.strokeStyle = '#f43f5e';
-          ctx.lineWidth = 3;
-
-          ctx.beginPath();
-          ctx.moveTo(0, e.radius * 1.2);
+          ctx.moveTo(0, e.radius * 1.1);
           ctx.lineTo(-e.radius, 0);
-          ctx.lineTo(-e.radius * 0.8, -e.radius);
-          ctx.lineTo(e.radius * 0.8, -e.radius);
+          ctx.lineTo(0, -e.radius * 1.1);
           ctx.lineTo(e.radius, 0);
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
-
-          // Bridge slit
-          ctx.fillStyle = '#f43f5e';
-          ctx.fillRect(-14, -8, 28, 4);
         }
 
-        // Mini health bar for armored foes
-        if (e.type !== 'skirmisher' && e.hp < (e.type === 'dreadnought' ? 14 : 6)) {
-          const maxHp = e.type === 'dreadnought' ? 14 : 6;
-          const barW = e.radius * 1.6;
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-          ctx.fillRect(-barW / 2, -e.radius - 10, barW, 3);
-          ctx.fillStyle = e.color;
-          ctx.fillRect(-barW / 2, -e.radius - 10, barW * (e.hp / maxHp), 3);
-        }
-
-        ctx.restore();
-      });
-
-      // Salvage Nanites
-      salvages.forEach(s => {
-        ctx.save();
-        ctx.translate(s.x, s.y);
-        ctx.rotate(s.rot);
-        ctx.fillStyle = '#38bdf8';
-        ctx.fillRect(-s.radius / 2, -s.radius / 2, s.radius, s.radius);
-        ctx.restore();
-      });
-
-      // Power Cores (Tactical drop pods with vector icons)
-      powerCores.forEach(p => {
-        ctx.save();
-        ctx.translate(p.x, p.y);
-        ctx.rotate(p.rot);
-
-        let strokeColor = '#38bdf8';
-        if (p.type === 'hull') strokeColor = '#10b981';
-        if (p.type === 'spread') strokeColor = '#f59e0b';
-
-        ctx.strokeStyle = strokeColor;
-        ctx.fillStyle = 'rgba(18, 22, 34, 0.9)';
-        ctx.lineWidth = 2;
+        // Polarized core eye
+        ctx.fillStyle = col;
         ctx.beginPath();
-        ctx.arc(0, 0, p.radius, 0, Math.PI * 2);
+        ctx.arc(0, 0, 3.5, 0, Math.PI * 2);
         ctx.fill();
-        ctx.stroke();
 
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = 2;
-        if (p.type === 'hull') {
-          // Cross
-          ctx.beginPath();
-          ctx.moveTo(-4, 0); ctx.lineTo(4, 0);
-          ctx.moveTo(0, -4); ctx.lineTo(0, 4);
-          ctx.stroke();
-        } else if (p.type === 'spread') {
-          // Triple ray
-          ctx.beginPath();
-          ctx.moveTo(0, 5); ctx.lineTo(0, -5);
-          ctx.moveTo(-4, 4); ctx.lineTo(-4, -2);
-          ctx.moveTo(4, 4); ctx.lineTo(4, -2);
-          ctx.stroke();
-        } else {
-          // EMP Bolt
-          ctx.beginPath();
-          ctx.moveTo(1, -5); ctx.lineTo(-2, 0); ctx.lineTo(2, 0); ctx.lineTo(-1, 5);
-          ctx.stroke();
-        }
         ctx.restore();
       });
 
-      // Player Interceptor
+      // Player Craft
       if (state === 'playing') {
-        const flicker = ship.invulnTimer > 0 && Math.floor(gameTime * 24) % 2 === 0;
+        const flicker = player.invuln > 0 && Math.floor(gameTime * 24) % 2 === 0;
         if (!flicker) {
           ctx.save();
-          ctx.translate(ship.x, ship.y);
+          ctx.translate(player.x, player.y);
+          const col = player.polarity === 'void' ? '#38bdf8' : '#f59e0b';
 
-          // Sub-orbital thruster plume
-          const flameH = Math.random() * 8 + 14;
-          const thrusterGrad = ctx.createLinearGradient(0, ship.radius * 0.7, 0, ship.radius * 0.7 + flameH);
-          thrusterGrad.addColorStop(0, '#38bdf8');
-          thrusterGrad.addColorStop(1, 'rgba(56, 189, 248, 0)');
-          ctx.fillStyle = thrusterGrad;
+          // Polarity shield aura
+          ctx.strokeStyle = col;
+          ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.moveTo(-5, ship.radius * 0.7);
-          ctx.lineTo(0, ship.radius * 0.7 + flameH);
-          ctx.lineTo(5, ship.radius * 0.7);
-          ctx.closePath();
-          ctx.fill();
+          ctx.arc(0, 0, player.radius + 6, 0, Math.PI * 2);
+          ctx.stroke();
 
-          // Interceptor Airframe: Matte stealth chassis with precision chamfers
-          ctx.fillStyle = '#1e293b';
-          ctx.strokeStyle = '#f8fafc';
+          // Interceptor Chassis
+          ctx.fillStyle = '#0f172a';
+          ctx.strokeStyle = col;
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(0, -ship.radius * 1.4);
-          ctx.lineTo(-ship.radius * 0.8, ship.radius * 0.7);
-          ctx.lineTo(-ship.radius * 0.35, ship.radius * 0.4);
-          ctx.lineTo(0, ship.radius * 0.6);
-          ctx.lineTo(ship.radius * 0.35, ship.radius * 0.4);
-          ctx.lineTo(ship.radius * 0.8, ship.radius * 0.7);
+          ctx.moveTo(0, -player.radius * 1.3);
+          ctx.lineTo(-player.radius * 0.75, player.radius * 0.8);
+          ctx.lineTo(0, player.radius * 0.4);
+          ctx.lineTo(player.radius * 0.75, player.radius * 0.8);
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
 
-          // Glass Canopy
-          ctx.fillStyle = '#38bdf8';
+          // Core
+          ctx.fillStyle = '#ffffff';
           ctx.beginPath();
-          ctx.ellipse(0, -ship.radius * 0.2, 3, 7, 0, 0, Math.PI * 2);
+          ctx.arc(0, -player.radius * 0.1, 2.5, 0, Math.PI * 2);
           ctx.fill();
 
           ctx.restore();
         }
       }
 
-      // Sparks & Explosions
+      // Particles
       particles.forEach(p => {
         ctx.fillStyle = p.color;
         ctx.globalAlpha = p.life / p.maxLife;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fill();
-      });
-      ctx.globalAlpha = 1.0;
-
-      // Damage & Score Popups
-      damageIndicators.forEach(d => {
-        ctx.font = '700 12px "JetBrains Mono", monospace';
-        ctx.fillStyle = d.color;
-        ctx.textAlign = 'center';
-        ctx.globalAlpha = Math.min(1.0, d.life / 0.3);
-        ctx.fillText(d.text, d.x, d.y);
       });
       ctx.globalAlpha = 1.0;
 
