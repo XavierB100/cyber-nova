@@ -1,24 +1,12 @@
-# PLAYLAB
+# POLARIS
 
-> An evolving collection of micro-games, experimental browser tools, and interactive digital artifacts by Xavier.
+> Dual-Polarity Tactical Bullet Hell (Ikaruga Protocol)
 
-Live URL: **[https://xavierb100.github.io/playlab/](https://xavierb100.github.io/playlab/)**
+Play live: **[https://xavierb100.github.io/polaris/](https://xavierb100.github.io/polaris/)**
 
----
-
-## Structure
-
-```
-playlab/
-├── index.html        # Main hub and collage portal
-├── polaris/          # Dual-Polarity Bullet Hell game (Ikaruga protocol)
-│   └── index.html
-└── README.md
-```
-
-## Adding a New Project
-
-1. Create a new subfolder (e.g. `tools/synth/` or `games/my-game/`).
-2. Add an `index.html` inside it.
-3. Add a corresponding card link in `index.html`.
-4. Push to `main` — GitHub Pages deploys automatically.
+## Gameplay
+- **Steer**: Drag anywhere with your thumb.
+- **Polarity Switch**: Double-tap anywhere to shift between **Void (Blue)** and **Solar (Orange)** shields.
+- **Absorb**: Bullets matching your current polarity cannot harm you; absorbing them charges your **Overdrive** gauge and boosts score multipliers.
+- **Overdrive**: At 100% charge, an automated EMP shockwave wipes opposite-colored hostiles and bullets.
+- **Vulnerability**: Opposite-colored bullets are lethal on contact.
